@@ -1093,19 +1093,23 @@
 
         if ($select.multiple){
           scope.$watchCollection(function(){ return ngModel.$modelValue; }, function(newValue, oldValue) {
-            if (oldValue != newValue)
-              ngModel.$modelValue = null; //Force scope model value and ngModel value to be out of sync to re-run formatters
-          });
-          scope.$watchCollection('$select.selected', function() {
-            ngModel.$setViewValue(Date.now()); //Set timestamp as a unique string to force changes
-          });
-          focusser.prop('disabled', true); //Focusser isn't needed if multiple
-        }else{
-          scope.$watch('$select.selected', function(newValue) {
-            if (ngModel.$viewValue !== newValue) {
-              ngModel.$setViewValue(newValue);
-            }
-          });
+        if (oldValue != newValue)
+          ngModel.$modelValue = null; //Force scope model value and ngModel value to be out of sync to re-run formatters
+        });
+        $select.firstPass = true;
+        scope.$watchCollection('$select.selected', function() {
+        if (!$select.firstPass) 
+          ngModel.$setViewValue(Date.now()); //Set timestamp as a unique string to force changes
+        else                   
+          $select.firstPass = false;
+        });
+        focusser.prop('disabled', true); //Focusser isn't needed if multiple
+        } else{
+        scope.$watch('$select.selected', function(newValue) {
+        if (ngModel.$viewValue !== newValue) {
+          ngModel.$setViewValue(newValue);
+        }
+        });
         }
 
         ngModel.$render = function() {
